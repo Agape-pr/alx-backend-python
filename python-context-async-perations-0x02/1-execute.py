@@ -20,3 +20,9 @@ class ExecuteQuery:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.conn:
             self.conn.close()
+
+db_name = 'users_database'
+query = 'SELECT * FROM users WHERE age > ?'
+params = (25,)
+with ExecuteQuery(db_name, query, params) as result:
+    print (result)
