@@ -24,20 +24,27 @@ class TestAccessNestedMap(unittest.TestCase):
         self.assertEqual(str(context.exception), f"'{expected_key}'")
 
 
-# test_utils.py
+#!/usr/bin/env python3
+"""
+Unittest module for utils.py
+"""
+
 import unittest
 from unittest.mock import patch, Mock
+
 from parameterized import parameterized
-from utils import get_json
+from utils import get_json, memoize
+
 
 class TestGetJson(unittest.TestCase):
+    """Tests for get_json function."""
 
     @parameterized.expand([
-        ("http://example.com", {"payload": True}),
-        ("http://holberton.io", {"payload": False}),
+        ("test_example", "http://example.com", {"payload": True}),
+        ("test_holberton", "http://holberton.io", {"payload": False})
     ])
-    def test_get_json(self, test_url, test_payload):
-        # Patch requests.get where it's used: in utils.get_json
+    def test_get_json(self, name, test_url, test_payload):
+        """Test get_json returns expected result with patched requests.get"""
         with patch("utils.requests.get") as mock_get:
             mock_response = Mock()
             mock_response.json.return_value = test_payload
@@ -45,17 +52,16 @@ class TestGetJson(unittest.TestCase):
 
             result = get_json(test_url)
 
-            mock_get.assert_called_once_with(test_url)   # Ensure get was called once with URL
-            self.assertEqual(result, test_payload)       # Ensure returned value is expected
+            mock_get.assert_called_once_with(test_url)
+            self.assertEqual(result, test_payload)
 
-
-# test_utils.py
-import unittest
-from unittest.mock import patch
-from utils import memoize
 
 class TestMemoize(unittest.TestCase):
+    """Tests for memoize decorator."""
+
     def test_memoize(self):
+        """Test that memoize calls method only once and caches result."""
+
         class TestClass:
             def a_method(self):
                 return 42
