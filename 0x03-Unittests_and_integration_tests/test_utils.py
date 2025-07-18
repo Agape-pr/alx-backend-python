@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
+"""
+Unittest module for utils.py
+"""
+
 import unittest
+from unittest.mock import patch, Mock
 from parameterized import parameterized
-from utils import access_nested_map 
+
+from utils import access_nested_map, get_json, memoize
 
 
 class TestAccessNestedMap(unittest.TestCase):
+    """Tests for access_nested_map function."""
 
     @parameterized.expand([
         ({"a": 1}, ("a",), 1),
@@ -24,24 +31,12 @@ class TestAccessNestedMap(unittest.TestCase):
         self.assertEqual(str(context.exception), f"'{expected_key}'")
 
 
-#!/usr/bin/env python3
-"""
-Unittest module for utils.py
-"""
-
-import unittest
-from unittest.mock import patch, Mock
-
-from parameterized import parameterized
-from utils import get_json, memoize
-
-
 class TestGetJson(unittest.TestCase):
     """Tests for get_json function."""
 
     @parameterized.expand([
         ("test_example", "http://example.com", {"payload": True}),
-        ("test_holberton", "http://holberton.io", {"payload": False})
+        ("test_holberton", "http://holberton.io", {"payload": False}),
     ])
     def test_get_json(self, name, test_url, test_payload):
         """Test get_json returns expected result with patched requests.get"""
