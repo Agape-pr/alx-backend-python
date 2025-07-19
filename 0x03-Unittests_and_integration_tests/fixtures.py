@@ -1,10 +1,26 @@
-# fixtures.py
+# For Unit Tests (used earlier)
+TEST_PAYLOAD = [
+    {'name': 'Google'},
+    {'name': 'Facebook'}
+]
 
-org_payload = {"repos_url": "https://api.github.com/orgs/test_org/repos"}
+# For Integration Tests (task 9)
+org_payload = {
+    "login": "test_org",
+    "repos_url": "https://api.github.com/orgs/test_org/repos",
+}
 
 repos_payload = [
-    {"name": "repo1", "license": {"key": "apache-2.0"}},
-    {"name": "repo2", "license": {"key": "mit"}},
+    {
+        "id": 1,
+        "name": "repo1",
+        "license": {"key": "apache-2.0"}
+    },
+    {
+        "id": 2,
+        "name": "repo2",
+        "license": {"key": "mit"}
+    },
 ]
 
 expected_repos = ["repo1", "repo2"]
