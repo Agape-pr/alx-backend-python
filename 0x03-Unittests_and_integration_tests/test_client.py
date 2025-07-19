@@ -161,34 +161,47 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
 
 
 
-import requests
+import unittest
+from unittest.mock import patch, Mock
+from parameterized import parameterized_class
+from client import GithubOrgClient
+from fixtures import org_payload, repos_payload, expected_repos, apache2_repos
 
-class GithubOrgClient:
-    ORG_URL = "https://api.github.com/orgs/{}"
 
-    def __init__(self, org_name):
-        self.org_name = org_name
+@parameterized_class([
+    {
+        "org_payload": org_payload,
+        "repos_payload": repos_payload,
+        "expected_repos": expected_repos,
+        "apache2_repos": apache2_repos,
+    }
+])
+class TestIntegrationGithubOrgClient(unittest.TestCase):
+    """Integration tests with mocked external HTTP requests only"""
 
-    @property
-    def org(self):
-        url = self.ORG_URL.format(self.org_name)
-        return requests.get(url).json()
+    @classmethod
+    def setUpClass(cls):
+        """Mock requests.get and define side_effect behavior"""
+        cls.get_patcher = patch("requests.get")
+        cls.mock_get = cls.get_patcher.start()
 
-    @staticmethod
-    def has_license(repo, license_key):
-        try:
-            return repo["license"]["key"] == license_key
-        except Exception:
-            return False
+        def side_effect(url):
+            if url == "https://api.github.com/orgs/test_org":
+                return Mock(json=lambda: cls.org_payload)
+            elif url == cls.org_payload.get("repos_url"):
+                return Mock(json=lambda: cls.repos_payload)
+            return Mock()
 
-    def public_repos(self, license=None):
-        repos_url = self.org.get("repos_url")
-        repos = requests.get(repos_url).json()
+        cls.mock_get.side_effect = side_effect
 
-        if license is None:
-            return [repo["name"] for repo in repos]
-        return [
-            repo["name"]
-            for repo in repos
-            if self.has_license(repo, license)
-        ]
+    @classmethod
+    def tearDownClass(cls):
+        cls.get_patcher.stop()
+
+    def test_public_repos(self):
+        client = GithubOrgClient("test_org")
+        self.assertEqual(client.public_repos(), self.expected_repos)
+
+    def test_public_repos_with_license(self):
+        client = GithubOrgClient("test_org")
+        self.assertEqual(client.public_repos(license="apache-2.0"), self.apache2_repos)
