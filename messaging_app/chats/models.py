@@ -34,7 +34,7 @@ class User(AbstractUser):
 # -----------------------
 
 class Conversation(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    conversation_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     participants = models.ManyToManyField('User', related_name='conversations')
     created_at = models.DateTimeField(default=timezone.now)
 
