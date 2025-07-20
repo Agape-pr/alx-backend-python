@@ -1,46 +1,46 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
-
-from .models import Conversation, Message
+from .models import Conversation, Message, User
 from .serializers import ConversationSerializer, MessageSerializer
+from django.shortcuts import get_object_or_404
 
 
 class ConversationViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet for listing conversations and creating new ones.
-    """
     queryset = Conversation.objects.all()
     serializer_class = ConversationSerializer
-    permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        # Optionally filter conversations where the user is a participant
-        return self.queryset.filter(participants=self.request.user)
+    def create(self, request, *args, **kwargs):
+        # Create a conversation with participants from request data
+        participant_ids = request.data.get('participants', [])
+        if not participant_ids:
+            return Response({"error": "Participants are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        conversation = Conversation.objects.create()
+        conversation.participants.set(User.objects.filter(user_id__in=participant_ids))
+        conversation.save()
+
+        serializer = self.get_serializer(conversation)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class MessageViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet for listing messages and sending new messages to conversations.
-    """
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        # Optionally filter messages related to a conversation or the user
-        conversation_id = self.request.query_params.get('conversation')
-        if conversation_id:
-            return self.queryset.filter(conversation__conversation_id=conversation_id)
-        return self.queryset.none()  # or all messages for user if you want
 
     def create(self, request, *args, **kwargs):
-        # Override to set sender to request.user automatically
-        data = request.data.copy()
-        data['sender'] = request.user.user_id  # assuming user_id is UUIDField PK
-        serializer = self.get_serializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        # Create a message linked to an existing conversation
+        sender_id = request.data.get('sender')
+        conversation_id = request.data.get('conversation')
+        message_body = request.data.get('message_body')
+
+        if not all([sender_id, conversation_id, message_body]):
+            return Response({"error": "sender, conversation and message_body are required"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        sender = get_object_or_404(User, user_id=sender_id)
+        conversation = get_object_or_404(Conversation, conversation_id=conversation_id)
+
+        message = Message.objects.create(sender=sender, conversation=conversation, message_body=message_body)
+        serializer = self.get_serializer(message)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
