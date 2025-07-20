@@ -47,7 +47,7 @@ class Conversation(models.Model):
 # -----------------------
 
 class Message(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    message_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     sender = models.ForeignKey('User', on_delete=models.CASCADE, related_name='messages_sent')
     conversation = models.ForeignKey('Conversation', on_delete=models.CASCADE, related_name='messages')
     message_body = models.TextField()
