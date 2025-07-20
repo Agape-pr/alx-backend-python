@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from .models import Conversation, Message, User
@@ -9,9 +9,10 @@ from django.shortcuts import get_object_or_404
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()
     serializer_class = ConversationSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['participants__email', 'conversation_id']  # example fields to filter by
 
     def create(self, request, *args, **kwargs):
-        # Create a conversation with participants from request data
         participant_ids = request.data.get('participants', [])
         if not participant_ids:
             return Response({"error": "Participants are required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -27,9 +28,10 @@ class ConversationViewSet(viewsets.ModelViewSet):
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['sender__email', 'conversation__conversation_id', 'message_body']
 
     def create(self, request, *args, **kwargs):
-        # Create a message linked to an existing conversation
         sender_id = request.data.get('sender')
         conversation_id = request.data.get('conversation')
         message_body = request.data.get('message_body')
