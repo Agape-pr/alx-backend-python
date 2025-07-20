@@ -8,7 +8,8 @@ from django.utils import timezone
 # -----------------------
 
 class User(AbstractUser):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user_idid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    password_hash = models.CharField(max_length=128, null=False, blank=False)
     username = None  # Remove username, use email instead
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
