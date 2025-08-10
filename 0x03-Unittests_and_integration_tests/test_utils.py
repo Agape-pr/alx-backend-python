@@ -1,63 +1,78 @@
 #!/usr/bin/env python3
-"""
-Unittest module for utils.py
-"""
+"""Unit tests for the utils module."""
 
 import unittest
-from unittest.mock import patch, Mock
+import utils
 from parameterized import parameterized
-
+from unittest.mock import patch, Mock
 from utils import access_nested_map, get_json, memoize
 
 
 class TestAccessNestedMap(unittest.TestCase):
-    """Tests for access_nested_map function."""
+    """Test case for the access_nested_map function."""
 
     @parameterized.expand([
         ({"a": 1}, ("a",), 1),
         ({"a": {"b": 2}}, ("a",), {"b": 2}),
         ({"a": {"b": 2}}, ("a", "b"), 2),
     ])
-    def test_access_nested_map(self, nested_map, path, expected):
+    def test_access_nested_map(
+        self,
+        nested_map: dict,
+        path: tuple,
+        expected: object
+    ) -> None:
+        """Test correct return value for given nested_map and path."""
         self.assertEqual(access_nested_map(nested_map, path), expected)
 
     @parameterized.expand([
-        ({}, ("a",), "a"),
-        ({"a": 1}, ("a", "b"), "b"),
+        ({}, ("a",)),
+        ({"a": 1}, ("a", "b")),
     ])
-    def test_access_nested_map_exception(self, nested_map, path, expected_key):
-        with self.assertRaises(KeyError) as context:
+    def test_access_nested_map_exception(
+        self,
+        nested_map: dict,
+        path: tuple
+    ) -> None:
+        """Test KeyError is raised for invalid path access."""
+        with self.assertRaises(KeyError) as cm:
             access_nested_map(nested_map, path)
-        self.assertEqual(str(context.exception), f"'{expected_key}'")
+        self.assertEqual(str(cm.exception), repr(path[-1]))
 
 
 class TestGetJson(unittest.TestCase):
-    """Tests for get_json function."""
+    """Test case for the get_json function."""
 
     @parameterized.expand([
-        ("test_example", "http://example.com", {"payload": True}),
-        ("test_holberton", "http://holberton.io", {"payload": False}),
+        ("http://example.com", {"payload": True}),
+        ("http://holberton.io", {"payload": False}),
     ])
-    def test_get_json(self, name, test_url, test_payload):
-        """Test get_json returns expected result with patched requests.get"""
-        with patch("utils.requests.get") as mock_get:
-            mock_response = Mock()
-            mock_response.json.return_value = test_payload
-            mock_get.return_value = mock_response
+    @patch("utils.requests.get")
+    def test_get_json(
+        self,
+        test_url: str,
+        test_payload: dict,
+        mock_get: Mock
+    ) -> None:
+        """Test get_json returns expected payload from URL."""
+        mock_response = Mock()
+        mock_response.json.return_value = test_payload
+        mock_get.return_value = mock_response
 
-            result = get_json(test_url)
+        result = get_json(test_url)
 
-            mock_get.assert_called_once_with(test_url)
-            self.assertEqual(result, test_payload)
+        mock_get.assert_called_once_with(test_url)
+        self.assertEqual(result, test_payload)
 
 
 class TestMemoize(unittest.TestCase):
-    """Tests for memoize decorator."""
+    """Test case for the memoize decorator."""
 
-    def test_memoize(self):
-        """Test that memoize calls method only once and caches result."""
-
+    def test_memoize(self) -> None:
+        """Test that memoize caches method result after first call."""
         class TestClass:
+            """Simple test class with memoized property."""
+
             def a_method(self):
                 return 42
 
@@ -65,10 +80,12 @@ class TestMemoize(unittest.TestCase):
             def a_property(self):
                 return self.a_method()
 
-        with patch.object(TestClass, "a_method", return_value=42) as mock_method:
-            obj = TestClass()
-            result1 = obj.a_property
-            result2 = obj.a_property
+        with patch.object(
+            TestClass, "a_method", return_value=42
+        ) as mock_method:
+            test_obj = TestClass()
+            result1 = test_obj.a_property
+            result2 = test_obj.a_property
 
             self.assertEqual(result1, 42)
             self.assertEqual(result2, 42)

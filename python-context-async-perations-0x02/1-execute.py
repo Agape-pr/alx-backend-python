@@ -6,23 +6,27 @@ class ExecuteQuery:
         self.query = query
         self.params = params or ()
         self.conn = None
+        self.cursor = None
         self.result = None
 
     def __enter__(self):
-        # Connect to DB
         self.conn = sqlite3.connect(self.db_name)
-        cursor = self.conn.cursor()
-        # Execute the query
-        cursor.execute(self.query, self.params)
-        self.result = cursor.fetchall()
+        self.cursor = self.conn.cursor()
+        self.cursor.execute(self.query, self.params)
+        self.result = self.cursor.fetchall()
         return self.result
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self.cursor:
+            self.cursor.close()
         if self.conn:
             self.conn.close()
 
-db_name = 'users_database'
-query = 'SELECT * FROM users WHERE age > ?'
-params = (25,)
-with ExecuteQuery(db_name, query, params) as result:
-    print (result)
+# ✅ Use the context manager
+if __name__ == "__main__":
+    query = "SELECT * FROM users WHERE age > ?"
+    params = (25,)
+
+    with ExecuteQuery('users.db', query, params) as result:
+        for row in result:
+            print(row)

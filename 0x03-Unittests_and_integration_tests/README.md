@@ -1,28 +1,97 @@
+## ✅ Final `README.md`
+
 # 0x03. Unittests and Integration Tests
 
-## 📌 Description
-
-This project focuses on writing unit tests and integration tests in Python using the `unittest` module. It also introduces tools like `parameterized` and `mock` to enhance testing. The aim is to help you write clean, reliable, and testable code — a core skill for backend developers.
+This project is part of the **ALX Backend Specialization**. It focuses on writing proper **unit tests** and **integration tests** for Python code using the `unittest` framework and mocking tools.
 
 ---
 
-## 🛠 Technologies
+## 📘 Learning Objectives
 
-- Python 3.x
-- `unittest` module
-- `parameterized` for test case variations
-- `mock` from `unittest.mock`
-- `aiounittest` or `aiosqlite` for async testing (if needed)
-- `pycodestyle` for PEP8 code style compliance
+By the end of this project, you should be able to explain the following without external help:
+
+- The difference between unit and integration tests
+- How to write unit tests for a Python function or class
+- How to use `unittest.mock` to patch functions and classes
+- How to parameterize tests using `parameterized`
+- How to test memoized methods and properties
+- How to write integration tests using fixtures
+- How to mock HTTP requests with side effects
 
 ---
 
-## 📂 Project Structure
+## 🛠️ Technologies
+
+- Python 3.7+
+- `unittest`
+- `unittest.mock`
+- `parameterized`
+- `pycodestyle` (PEP8) style guide
+- Ubuntu 18.04 (via checker)
+
+---
+
+## 🧪 Project Structure
+
+```
+
+0x03-unittests\_and\_integration\_tests/
+│
+├── client.py               # GithubOrgClient class (main client logic)
+├── utils.py                # Utility functions (memoization, JSON fetch)
+├── fixtures.py             # Test data fixtures for integration tests
+├── test\_client.py          # Unit and integration tests for client.py
+├── test\_utils.py           # Unit tests for utils.py
+└── README.md               # Project documentation
+
+````
+
+---
+
+## ✅ Tasks Covered
+
+### Unit Testing (`test_utils.py`)
+- `access_nested_map()` with standard and exception cases
+- `get_json()` using mock for `requests.get`
+- `memoize()` using mock for method caching
+
+### Unit Testing (`test_client.py`)
+- `.org` method using `@patch` and `@parameterized`
+- `_public_repos_url` property using `PropertyMock`
+- `.public_repos()` with and without `license` filtering
+- `has_license()` static method with param tests
+
+### Integration Testing (`test_client.py`)
+- `.public_repos()` end-to-end test using `requests.get` mock
+- Setup using `@parameterized_class` and test fixtures
+- Side effects for dynamic API responses
+
+---
+
+## 📦 Usage
+
+To run all tests:
 
 ```bash
-.
-├── utils.py                # Contains utility functions
-├── test_utils.py          # Unit tests for utils.py
-├── client.py              # A sample API client module (if required)
-├── test_client.py         # Unit and integration tests for client.py
-└── README.md              # Project documentation
+PYTHONPATH=. python3 -m unittest test_utils.py
+PYTHONPATH=. python3 -m unittest test_client.py
+````
+
+To check code style:
+
+```bash
+pycodestyle test_utils.py test_client.py client.py utils.py
+```
+
+---
+
+## 👩🏽‍💻 Author
+
+**Blessing Ebele Anochili**
+Backend Developer | Translator | ALX Learner
+
+---
+
+## 🏁 Acknowledgments
+
+Special thanks to **ALX** and **Holberton School** for the hands-on projects and support.
